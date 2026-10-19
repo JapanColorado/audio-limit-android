@@ -1,0 +1,33 @@
+[workspace]
+name = "audio-limit"
+version = "0.1.0"
+description = "Android app that tracks media playback per app and locks apps after a usage limit"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+# Bootstrap/fallback runner only; builds use ./gradlew (wrapper pins 8.11.1).
+gradle = ">=8.11"
+# Gradle 8.11 cannot run on the JDK 25 that conda-forge gradle otherwise pulls in.
+openjdk = "21.*"
+
+[activation.env]
+ANDROID_HOME = "/home/russell/Android/Sdk"
+
+[tasks]
+# Build / install / run: release is the default, -debug variants use the .debug appId.
+build = { cmd = "./gradlew assembleRelease", description = "Assemble the release APK (debug-signed)" }
+build-debug = { cmd = "./gradlew assembleDebug", description = "Assemble the debug APK" }
+install = { cmd = "./gradlew installRelease", description = "Build and install the release APK on the connected adb device" }
+install-debug = { cmd = "./gradlew installDebug", description = "Build and install the debug APK on the connected adb device" }
+run = { cmd = "adb shell am start -n dev.russell.audiolimit/dev.russell.audiolimit.MainActivity", depends-on = ["install"], description = "Install the release APK and launch it" }
+run-debug = { cmd = "adb shell am start -n dev.russell.audiolimit.debug/dev.russell.audiolimit.MainActivity", depends-on = ["install-debug"], description = "Install the debug APK and launch it" }
+clean = { cmd = "./gradlew clean", description = "Delete all Gradle build outputs" }
+
+# Verification
+test = { cmd = "./gradlew testDebugUnitTest", description = "Run JVM unit tests" }
+lint = { cmd = "./gradlew lintDebug", description = "Run Android lint on the debug variant" }
+
+# Device inspection
+logs = { cmd = "adb logcat -s AudioLimit:*", description = "Filtered logcat" }
+sessions = { cmd = "adb shell dumpsys media_session | grep -E 'package=|state=PlaybackState'", description = "Show active media sessions and their playback states" }

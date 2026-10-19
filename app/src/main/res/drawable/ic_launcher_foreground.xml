@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Headphones -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30c-13.3,0 -24,10.7 -24,24v14c0,3.3 2.7,6 6,6h4V56h-6v-2c0,-11 9,-20 20,-20s20,9 20,20v2h-6v18h4c3.3,0 6,-2.7 6,-6V54C78,40.7 67.3,30 54,30z" />
+    <!-- Lock badge -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M60,62h14v12h-14z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD54F"
+        android:strokeWidth="2.5"
+        android:pathData="M62.5,62v-3a4.5,4.5 0,0 1,9 0v3" />
+</vector>
