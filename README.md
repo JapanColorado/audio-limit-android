@@ -9,6 +9,23 @@ Tracks how long each app plays audio/media and locks apps once you hit a limit �
 - **Blocking**: blocked apps' playback is paused (and stopped if they ignore pause), and opening them shows a full-screen lock until the block lifts. Heads-up notification 5 minutes before a limit.
 - **Strictness**: a locked rule can only be tightened — no raising limits, removing apps/windows/days, or deleting — until it unlocks. While any lock is active you can't change the reset hour or turn off protections; the accessibility service bounces you out of system pages mentioning Audio Limit (App info, accessibility, notification access, device admin, uninstall dialog), and device admin blocks plain uninstall.
 
+## Building
+
+Requires [pixi](https://pixi.sh) (it supplies JDK 21) and an Android SDK at `~/Android/Sdk` (exported as `ANDROID_HOME` on pixi activation). Never run `./gradlew` outside pixi.
+
+```sh
+pixi install          # one-time: fetches the JDK
+pixi run build        # assembleRelease (signed if keystore.properties exists, else debug-signed)
+pixi run install      # build + install the release APK on the connected phone
+pixi run run          # install + launch
+pixi run build-debug / install-debug / run-debug   # debug variant (dev.russell.audiolimit.debug)
+pixi run test         # JVM unit tests
+pixi run lint         # Android lint
+pixi run logs         # filtered logcat
+```
+
+Release signing reads a gitignored `keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`).
+
 ## Setup on the phone
 
 1. `pixi run install` (or `run-debug` for the debug build).

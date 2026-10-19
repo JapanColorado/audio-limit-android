@@ -9,3 +9,8 @@ captures/
 .cxx/
 .local-backups/
 
+
+# Shared Android-Apps baseline
+keystore.properties
+*.jks
+*.keystore

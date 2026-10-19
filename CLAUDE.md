@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 Audio Limit (`dev.russell.audiolimit`): an Android app (Kotlin, Jetpack Compose / Material 3, single `app` module, minSdk 31) that tracks media playback per app and enforces LockMeOut-style limits — per-app, group, and total daily budgets plus time-of-day block windows.
 
 ## Commands
@@ -9,7 +11,7 @@ pixi tasks wrap `./gradlew` (the wrapper pins Gradle 8.11.1; pixi supplies JDK 2
 ```sh
 pixi run test          # JVM unit tests (domain logic)
 pixi run lint          # ./gradlew lintDebug
-pixi run build-debug   # assembleDebug; `build` = assembleRelease (minified, debug-signed)
+pixi run build-debug   # assembleDebug; `build` = assembleRelease (minified, signed only if keystore.properties exists, else debug-signed)
 pixi run run-debug     # install debug (appId dev.russell.audiolimit.debug) and launch
 pixi run logs          # logcat tag AudioLimit
 pixi run sessions      # dumpsys media_session: which apps have sessions and their states

@@ -1,6 +1,5 @@
 [workspace]
 name = "audio-limit"
-version = "0.1.0"
 description = "Android app that tracks media playback per app and locks apps after a usage limit"
 channels = ["conda-forge"]
 platforms = ["linux-64"]
