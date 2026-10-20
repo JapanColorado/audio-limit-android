@@ -103,7 +103,7 @@ fun HomeScreen(onAddRule: (String) -> Unit) {
         if (!postNotifications) item {
             SetupCard(
                 "Allow notifications",
-                "Optional. Get a heads-up 5 minutes before a limit, and a notice when audio is paused.",
+                "Optional. Get a heads-up before a limit runs out (timing is in Settings), and a notice when audio is paused.",
                 "Allow",
             ) { notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
         }

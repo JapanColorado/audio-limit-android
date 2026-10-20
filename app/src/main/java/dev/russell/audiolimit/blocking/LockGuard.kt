@@ -55,6 +55,12 @@ class LockGuard(
         return null
     }
 
+    /** Not lock-guarded: the warning is a courtesy, not a protection. */
+    suspend fun setWarnMinutes(minutes: Int): String? {
+        settings.setWarnMinutes(minutes)
+        return null
+    }
+
     /** Null if no lock is active; otherwise why [action] is refused. */
     suspend fun anyLockMessage(action: String): String? =
         enforcer.refresh().lockedUntil?.let { "A lock is active until ${formatUntil(it)} — you can't $action right now." }

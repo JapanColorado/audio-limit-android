@@ -4,6 +4,10 @@ import android.app.admin.DevicePolicyManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,6 +18,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -45,6 +50,7 @@ fun SettingsScreen() {
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var pickingHour by remember { mutableStateOf(false) }
+    var pickingWarn by remember { mutableStateOf(false) }
 
     var resumes by remember { mutableIntStateOf(0) }
     LifecycleResumeEffect(Unit) {
@@ -67,6 +73,12 @@ fun SettingsScreen() {
                 supportingContent = { Text("Usage counts toward the day that started at ${formatMinuteOfDay(settings.resetHour * 60)}") },
                 trailingContent = { Text(formatMinuteOfDay(settings.resetHour * 60)) },
                 modifier = Modifier.clickable { pickingHour = true },
+            )
+            ListItem(
+                headlineContent = { Text("Warn before limit") },
+                supportingContent = { Text("Notification when a limit is about to run out while its apps are playing") },
+                trailingContent = { Text(describeWarn(settings.warnMinutes)) },
+                modifier = Modifier.clickable { pickingWarn = true },
             )
             ListItem(
                 headlineContent = { Text("Protect settings while locked") },
@@ -125,6 +137,31 @@ fun SettingsScreen() {
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
 
+    if (pickingWarn) {
+        AlertDialog(
+            onDismissRequest = { pickingWarn = false },
+            title = { Text("Warn before limit") },
+            text = {
+                Column {
+                    for (minutes in WARN_CHOICES) {
+                        Row(
+                            Modifier.fillMaxWidth().clickable {
+                                pickingWarn = false
+                                guarded { graph.guard.setWarnMinutes(minutes) }
+                            }.padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = settings.warnMinutes == minutes, onClick = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(describeWarn(minutes), style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { pickingWarn = false }) { Text("Cancel") } },
+        )
+    }
+
     if (pickingHour) {
         AlertDialog(
             onDismissRequest = { pickingHour = false },
@@ -147,6 +184,10 @@ fun SettingsScreen() {
         )
     }
 }
+
+private val WARN_CHOICES = listOf(0, 1, 2, 5, 10, 15, 30)
+
+private fun describeWarn(minutes: Int) = if (minutes == 0) "Off" else "$minutes min before"
 
 @Composable
 private fun AccessRow(title: String, purpose: String, granted: Boolean, onClick: () -> Unit) {

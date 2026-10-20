@@ -18,6 +18,8 @@ data class AppSettings(
     val resetHour: Int = 4,
     /** Bounce the user out of this app's system settings pages while any lock is active. */
     val protectSettings: Boolean = true,
+    /** Notify this many minutes before a limit runs out while its apps play; 0 = off. */
+    val warnMinutes: Int = 5,
 )
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -38,13 +40,19 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         context.dataStore.edit { it[PROTECT_SETTINGS] = enabled }
     }
 
+    suspend fun setWarnMinutes(minutes: Int) {
+        context.dataStore.edit { it[WARN_MINUTES] = minutes }
+    }
+
     private fun Preferences.toSettings() = AppSettings(
         resetHour = this[RESET_HOUR] ?: AppSettings().resetHour,
         protectSettings = this[PROTECT_SETTINGS] ?: AppSettings().protectSettings,
+        warnMinutes = this[WARN_MINUTES] ?: AppSettings().warnMinutes,
     )
 
     private companion object {
         val RESET_HOUR = intPreferencesKey("reset_hour")
         val PROTECT_SETTINGS = booleanPreferencesKey("protect_settings")
+        val WARN_MINUTES = intPreferencesKey("warn_minutes")
     }
 }

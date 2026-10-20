@@ -6,7 +6,7 @@ Tracks how long each app plays audio/media and locks apps once you hit a limit �
 
 - **Tracking**: per-app listening time, detected from media sessions (the same source as the media controls in the notification shade). Today view + 7-day history, with a usage day that resets at a configurable hour (default 4 am).
 - **Rules**: daily limit for one app, a group of apps sharing a budget, or all audio (with exclusions); limits can apply only on chosen weekdays. Optional block windows (e.g. 11 pm–7 am) block regardless of usage.
-- **Blocking**: blocked apps' playback is paused (and stopped if they ignore pause), and opening them shows a full-screen lock until the block lifts. Heads-up notification 5 minutes before a limit.
+- **Blocking**: blocked apps' playback is paused (and stopped if they ignore pause), and opening them shows a full-screen lock until the block lifts. Heads-up notification a configurable time before a limit (Settings → Warn before limit; default 5 min, or off).
 - **Strictness**: a locked rule can only be tightened — no raising limits, removing apps/windows/days, or deleting — until it unlocks. While any lock is active you can't change the reset hour or turn off protections; the accessibility service bounces you out of system pages mentioning Audio Limit (App info, accessibility, notification access, device admin, uninstall dialog), and device admin blocks plain uninstall.
 
 ## Building
