@@ -7,7 +7,7 @@ Tracks how long each app plays audio/media and locks apps once you hit a limit �
 - **Tracking**: per-app listening time, detected from media sessions (the same source as the media controls in the notification shade). Today view + 7-day history, with a usage day that resets at a configurable hour (default 4 am).
 - **Rules**: daily limit for one app, a group of apps sharing a budget, or all audio (with exclusions); limits can apply only on chosen weekdays. Optional block windows (e.g. 11 pm–7 am) block regardless of usage.
 - **Blocking**: blocked apps' playback is paused (and stopped if they ignore pause), and opening them shows a full-screen lock until the block lifts. Heads-up notification a configurable time before a limit (Settings → Warn before limit; default 5 min, or off).
-- **Strictness**: a locked rule can only be tightened — no raising limits, removing apps/windows/days, or deleting — until it unlocks. While any lock is active you can't change the reset hour or turn off protections; the accessibility service bounces you out of system pages mentioning Audio Limit (App info, accessibility, notification access, device admin, uninstall dialog), and device admin blocks plain uninstall.
+- **Strictness**: a locked rule can only be tightened — no raising limits, removing apps/windows/days, or deleting — until it unlocks. The same freeze starts once a limit is within its warning time and holds until the daily reset, so you can't dodge the limit after being warned; the warning time itself can't be shortened then. While any lock is active you can't change the reset hour or turn off protections; the accessibility service bounces you out of system pages mentioning Audio Limit (App info, accessibility, notification access, device admin, uninstall dialog), and device admin blocks plain uninstall.
 
 ## Building
 
@@ -45,6 +45,6 @@ Release signing reads a gitignored `keystore.properties` (`storeFile`, `storePas
 2. Create a 5 min app rule; at ~0–5 min left a warning notification appears; at the limit, playback pauses, a "Paused" notification appears.
 3. Press play again → it's paused again within a second.
 4. Open the app → lock screen with unlock time; "Go home" / back go to the launcher.
-5. Edit the locked rule: raising the limit or deleting is refused; lowering it saves.
+5. Edit the locked rule: raising the limit or deleting is refused; lowering it saves. The same holds from the moment the warning appears.
 6. With a lock active, open Settings → Apps → Audio Limit → bounced to the lock screen. Settings → reset hour change refused.
 7. Add a block window covering now on an unlimited rule → app is blocked immediately; ends at the window end.

@@ -74,11 +74,11 @@ private fun RuleCard(status: RuleStatus, onClick: () -> Unit) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(rule.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (status.isBlocking) {
+                if (status.isFrozen) {
                     Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.size(4.dp))
                     Text(
-                        "until ${formatUntil(status.blockedUntil!!)}",
+                        "until ${formatUntil(status.frozenUntil!!)}",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelLarge,
                     )

@@ -51,7 +51,8 @@ class Enforcer(
     /** Re-evaluates immediately and returns the fresh result. */
     suspend fun refresh(): Evaluation = mutex.withLock {
         val now = ZonedDateTime.now()
-        val resetHour = settings.current().resetHour
+        val current = settings.current()
+        val resetHour = current.resetHour
         val dayStart = UsageDay.startOf(now, resetHour)
         val nowMs = now.toInstant().toEpochMilli()
         RuleEvaluator.evaluate(
@@ -60,6 +61,7 @@ class Enforcer(
             mediaPackages = usage.mediaPackages(),
             now = now,
             resetHour = resetHour,
+            warnMillis = current.warnMinutes * 60_000L,
         ).also { _evaluation.value = it }
     }
 

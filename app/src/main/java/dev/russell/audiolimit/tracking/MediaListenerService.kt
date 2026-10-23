@@ -68,15 +68,13 @@ class MediaListenerService : NotificationListenerService() {
 
     private fun enforce() {
         val evaluation = graph.enforcer.evaluation.value
-        val warnMillis = graph.settings.flow.value.warnMinutes * 60_000L
         pauseAttempted.retainAll { it.isPlaying }
         for (controller in callbacks.keys.filter { it.isPlaying }) {
             val pkg = controller.packageName
             val block = evaluation.blockFor(pkg)
             if (block == null) {
-                if (warnMillis == 0L) continue
                 evaluation.statuses
-                    .filter { it.rule.appliesTo(pkg) && (it.remainingMillis ?: Long.MAX_VALUE) in 1..warnMillis }
+                    .filter { it.rule.appliesTo(pkg) && it.isWarning }
                     .forEach { graph.notifier.warn(it, evaluation.dayStart) }
                 continue
             }

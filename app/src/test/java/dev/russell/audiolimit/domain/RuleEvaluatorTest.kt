@@ -101,4 +101,20 @@ class RuleEvaluatorTest {
         val rule = Rule(1, "x", RuleKind.APP, setOf("a"), limitMinutes = 1, limitDays = all - SATURDAY)
         assertThat(eval(listOf(rule), mapOf("a" to 5 * min), now = at(17, 12)).statusOf(1)!!.limitMillis).isNull()
     }
+
+    @Test
+    fun `rule freezes once inside the warning time and stays frozen until reset`() {
+        val rule = Rule(1, "Spotify", RuleKind.APP, setOf("spotify"), limitMinutes = 60)
+        fun status(used: Long, warn: Long = 5 * min) =
+            RuleEvaluator.evaluate(listOf(rule), mapOf("spotify" to used), setOf("spotify"), friNoon, 4, warn).statusOf(1)!!
+
+        assertThat(status(54 * min).isFrozen).isFalse()
+        val warned = status(56 * min)
+        assertThat(warned.isWarning).isTrue()
+        assertThat(warned.isBlocking).isFalse()
+        assertThat(warned.frozenUntil).isEqualTo(at(17, 4))
+        assertThat(status(60 * min).frozenUntil).isEqualTo(at(17, 4))
+        // Warnings off: no freeze until the limit itself is reached.
+        assertThat(status(56 * min, warn = 0).isFrozen).isFalse()
+    }
 }

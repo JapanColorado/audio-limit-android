@@ -9,8 +9,9 @@ import dev.russell.audiolimit.domain.RuleKind
 import dev.russell.audiolimit.util.formatUntil
 
 /**
- * The only path for user edits to rules and settings. While a lock is active, anything that would
- * loosen it is refused. Every method returns an error message to show, or null on success.
+ * The only path for user edits to rules and settings. While a lock is active, or a limit is within its
+ * warning time, anything that would loosen it is refused. Every method returns an error message to
+ * show, or null on success.
  */
 class LockGuard(
     private val enforcer: Enforcer,
@@ -22,9 +23,9 @@ class LockGuard(
         if (rule.id != 0L) {
             val old = rules.get(rule.id)
             val status = enforcer.refresh().statusOf(rule.id)
-            if (old != null && status != null && status.isBlocking) {
+            if (old != null && status != null && status.isFrozen) {
                 Loosening.reason(old, rule)?.let {
-                    return "Locked until ${formatUntil(status.blockedUntil!!)} — you can't $it right now."
+                    return "Locked until ${formatUntil(status.frozenUntil!!)} — you can't $it right now."
                 }
             }
         }
@@ -34,8 +35,8 @@ class LockGuard(
     }
 
     suspend fun deleteRule(id: Long): String? {
-        enforcer.refresh().statusOf(id)?.takeIf { it.isBlocking }?.let {
-            return "Locked until ${formatUntil(it.blockedUntil!!)} — you can't delete this rule right now."
+        enforcer.refresh().statusOf(id)?.takeIf { it.isFrozen }?.let {
+            return "Locked until ${formatUntil(it.frozenUntil!!)} — you can't delete this rule right now."
         }
         rules.delete(id)
         enforcer.refresh()
@@ -55,15 +56,20 @@ class LockGuard(
         return null
     }
 
-    /** Not lock-guarded: the warning is a courtesy, not a protection. */
     suspend fun setWarnMinutes(minutes: Int): String? {
+        // Shortening the warning would end the freeze on rules already inside it.
+        if (minutes < settings.current().warnMinutes) {
+            enforcer.refresh().statuses.filter { it.isWarning }.mapNotNull { it.frozenUntil }.maxOrNull()?.let {
+                return "A limit is about to run out — you can't shorten the warning until ${formatUntil(it)}."
+            }
+        }
         settings.setWarnMinutes(minutes)
         return null
     }
 
-    /** Null if no lock is active; otherwise why [action] is refused. */
+    /** Null if no lock (or limit warning) is active; otherwise why [action] is refused. */
     suspend fun anyLockMessage(action: String): String? =
-        enforcer.refresh().lockedUntil?.let { "A lock is active until ${formatUntil(it)} — you can't $action right now." }
+        enforcer.refresh().frozenUntil?.let { "A lock is active until ${formatUntil(it)} — you can't $action right now." }
 
     private fun validate(rule: Rule): String? = when {
         rule.name.isBlank() -> "Give the rule a name."

@@ -34,9 +34,9 @@ class EditRuleViewModel(
 
     val isNew get() = ruleId == 0L
 
-    /** Set while this rule is blocking; the editor then only accepts stricter changes. */
+    /** Set while this rule is blocking or warning; the editor then only accepts stricter changes. */
     val lockedUntil: StateFlow<ZonedDateTime?> = graph.enforcer.evaluation
-        .map { it.statusOf(ruleId)?.takeIf { s -> s.isBlocking }?.blockedUntil }
+        .map { it.statusOf(ruleId)?.frozenUntil }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     init {

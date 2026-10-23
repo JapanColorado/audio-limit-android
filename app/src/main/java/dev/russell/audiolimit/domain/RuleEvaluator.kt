@@ -13,14 +13,26 @@ data class RuleStatus(
     /** End of the block window active right now, if any. */
     val activeWindowEnd: ZonedDateTime?,
     val nextReset: ZonedDateTime,
+    /** How long before the limit the warning goes out; 0 = warnings off. */
+    val warnMillis: Long = 0,
 ) {
     val limitReached get() = limitMillis != null && usedMillis >= limitMillis
     val isBlocking get() = limitReached || activeWindowEnd != null
     val remainingMillis: Long? get() = limitMillis?.let { (it - usedMillis).coerceAtLeast(0) }
 
+    /** The limit is about to run out: the warning is due, and the rule is frozen like a lock. */
+    val isWarning get() = warnMillis > 0 && (remainingMillis ?: 0) in 1..warnMillis
+
     /** When the block lifts. A reached limit holds until the next reset. */
     val blockedUntil: ZonedDateTime?
         get() = listOfNotNull(nextReset.takeIf { limitReached }, activeWindowEnd).maxOrNull()
+
+    /** Blocking or warning, so the rule may only get stricter. */
+    val isFrozen get() = isBlocking || isWarning
+
+    /** When the rule may be loosened again. A warning holds until the next reset, since usage only grows. */
+    val frozenUntil: ZonedDateTime?
+        get() = listOfNotNull(blockedUntil, nextReset.takeIf { isWarning }).maxOrNull()
 }
 
 class Evaluation(
@@ -47,6 +59,7 @@ class Evaluation(
 
     val anyLocked get() = statuses.any { it.isBlocking }
     val lockedUntil: ZonedDateTime? get() = statuses.mapNotNull { it.blockedUntil }.maxOrNull()
+    val frozenUntil: ZonedDateTime? get() = statuses.mapNotNull { it.frozenUntil }.maxOrNull()
 
     companion object {
         private val EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
@@ -61,6 +74,7 @@ object RuleEvaluator {
         mediaPackages: Set<String>,
         now: ZonedDateTime,
         resetHour: Int,
+        warnMillis: Long = 0,
     ): Evaluation {
         val dayStart = UsageDay.startOf(now, resetHour)
         val nextReset = UsageDay.nextReset(now, resetHour)
@@ -73,6 +87,7 @@ object RuleEvaluator {
                     ?.let { it * 60_000L },
                 activeWindowEnd = rule.windows.mapNotNull { windowEnd(it, now) }.maxOrNull(),
                 nextReset = nextReset,
+                warnMillis = warnMillis,
             )
         }
         return Evaluation(statuses, mediaPackages, dayStart, nextReset)
