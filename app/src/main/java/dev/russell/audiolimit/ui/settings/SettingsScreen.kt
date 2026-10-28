@@ -91,7 +91,9 @@ fun SettingsScreen() {
             )
             ListItem(
                 headlineContent = { Text("Uninstall protection") },
-                supportingContent = { Text("Device admin: must be deactivated before the app can be uninstalled.") },
+                supportingContent = {
+                    Text("Device admin: must be deactivated before the app can be uninstalled. While a lock is active, its system page is blocked too.")
+                },
                 trailingContent = {
                     Switch(deviceAdmin, onCheckedChange = { on ->
                         if (on) {

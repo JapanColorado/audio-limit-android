@@ -1,5 +1,6 @@
 package dev.russell.audiolimit.blocking
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,7 +34,10 @@ import dev.russell.audiolimit.ui.theme.AudioLimitTheme
 import dev.russell.audiolimit.util.formatDuration
 import dev.russell.audiolimit.util.formatUntil
 
-/** Full-screen lock shown over a blocked app (or a guarded settings page, when no package is given). */
+/**
+ * Full-screen lock shown over a blocked app, or over a guarded settings page when no package is given
+ * (a device admin page when [EXTRA_ADMIN] is set: that guard lasts while any rule is frozen).
+ */
 class BlockActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,9 +46,10 @@ class BlockActivity : ComponentActivity() {
             override fun handleOnBackPressed() = goHome()
         })
         val pkg = intent.getStringExtra(EXTRA_PACKAGE)
+        val admin = intent.getBooleanExtra(EXTRA_ADMIN, false)
         setContent {
             AudioLimitTheme {
-                BlockScreen(pkg, onHome = ::goHome)
+                BlockScreen(pkg, admin, onHome = ::goHome)
             }
         }
     }
@@ -60,10 +65,14 @@ class BlockActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun BlockScreen(pkg: String?, onHome: () -> Unit) {
+    private fun BlockScreen(pkg: String?, admin: Boolean, onHome: () -> Unit) {
         val evaluation by appGraph.enforcer.evaluation.collectAsState()
         val block = if (pkg != null) evaluation.screenBlockFor(pkg) else null
-        val until = (if (pkg != null) block?.blockedUntil else evaluation.lockedUntil)
+        val until = when {
+            pkg != null -> block?.blockedUntil
+            admin -> evaluation.frozenUntil
+            else -> evaluation.lockedUntil
+        }
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
             Column(
                 Modifier.fillMaxSize().padding(32.dp),
@@ -80,6 +89,7 @@ class BlockActivity : ComponentActivity() {
                 )
                 Spacer(Modifier.height(12.dp))
                 val reason = when {
+                    pkg == null && admin -> "Uninstall protection can't be turned off while a lock is active."
                     pkg == null -> "Audio Limit's system settings can't be changed while a lock is active."
                     block == null -> "The lock has lifted."
                     block.limitReached ->
@@ -103,5 +113,13 @@ class BlockActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_PACKAGE = "package"
+        const val EXTRA_ADMIN = "admin"
+
+        fun intent(context: Context, pkg: String? = null, admin: Boolean = false): Intent =
+            // Cover rather than going home first: a launcher arriving after us would stop (and finish) the block.
+            Intent(context, BlockActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .putExtra(EXTRA_PACKAGE, pkg)
+                .putExtra(EXTRA_ADMIN, admin)
     }
 }

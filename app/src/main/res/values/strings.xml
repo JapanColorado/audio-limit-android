@@ -2,4 +2,7 @@
     <string name="app_name">Audio Limit</string>
     <string name="accessibility_description">Shows a lock screen when you open an app whose audio limit is used up, and keeps you out of this app\'s system settings pages while a lock is active.</string>
     <string name="device_admin_description">Makes Audio Limit harder to uninstall while a lock is active.</string>
+    <!-- The settings guard recognizes device admin pages by these strings and the description above. -->
+    <string name="device_admin_disable_warning">Audio Limit will no longer be protected from uninstall.</string>
+    <string name="device_admin_disable_locked">A lock is active, so Audio Limit\'s uninstall protection can\'t be turned off right now.</string>
 </resources>
