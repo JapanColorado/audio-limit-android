@@ -51,3 +51,11 @@ Release signing reads a gitignored `keystore.properties` (`storeFile`, `storePas
 6. With a lock active, open Settings → Apps → Audio Limit → bounced to the lock screen. Settings → reset hour change refused.
 7. Add a block window covering now on an unlimited rule → app is blocked immediately; ends at the window end.
 8. With device admin on, "Protect settings while locked" off, and a rule inside its warning time: Settings → Device admin apps → Audio Limit → bounced to the lock screen ("Uninstall protection…").
+
+## How this was built
+
+Built with [Claude Code](https://claude.com/claude-code), and most commits say so. I decide what to make, write the specification, review the changes and use the result every day.
+
+## License
+
+[MIT](LICENSE)
